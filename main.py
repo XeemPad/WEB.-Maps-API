@@ -49,15 +49,13 @@ class MapWindow(QWidget):
         os.remove(self.map_file)
 
     def keyPressEvent(self, event):
-        print('Вход')
-        if event.key() == Qt.LeftArrow:
-            print('Левая стрелка')
+        if event.key() == Qt.Key_Left:
             self.coordinates[0] -= 1
-        elif event.key() == Qt.RightArrow:
+        elif event.key() == Qt.Key_Right:
             self.coordinates[0] += 1
-        elif event.key() == Qt.UpArrow:
+        elif event.key() == Qt.Key_Up:
             self.coordinates[1] -= 1
-        elif event.key() == Qt.DownArrow:
+        elif event.key() == Qt.Key_Down:
             self.coordinates[1] += 1
         else:
             return
