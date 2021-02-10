@@ -34,7 +34,7 @@ class MapWindow(QWidget):
         self.setWindowTitle('Отображение карты')
 
         self.coordinates = [0, 0]
-        self.zoom = 3
+        self.zoom = 5
         self.map_type = 'map'
 
         self.map_file = "map.png"
@@ -50,13 +50,14 @@ class MapWindow(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Left:
-            self.coordinates[0] -= 1
+            print(2 ** (self.zoom - 1) * 180)
+            self.coordinates[0] -= 2 ** -(self.zoom - 1) * 180
         elif event.key() == Qt.Key_Right:
-            self.coordinates[0] += 1
+            self.coordinates[0] += 2 ** -(self.zoom - 1) * 180
         elif event.key() == Qt.Key_Up:
-            self.coordinates[1] -= 1
+            self.coordinates[1] -= 2 ** -(self.zoom - 1) * 180
         elif event.key() == Qt.Key_Down:
-            self.coordinates[1] += 1
+            self.coordinates[1] += 2 ** -(self.zoom - 1) * 180
         else:
             return
         self.update_image()
