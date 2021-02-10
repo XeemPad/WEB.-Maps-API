@@ -2,7 +2,7 @@ import os
 import sys
 
 import requests
-from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit
 
@@ -15,7 +15,7 @@ class MapWindow(QWidget):
         super().__init__()
         self.initUI()
 
-    def getImage(self):
+    def update_image(self):
         server = "http://static-maps.yandex.ru/1.x/"
         parameters = {'ll': ','.join(map(str, self.coordinates)),
                       'z': self.zoom,
@@ -26,12 +26,15 @@ class MapWindow(QWidget):
         with open(self.map_file, "wb") as file:
             file.write(response.content)
 
+        self.pixmap = QPixmap(self.map_file)
+        self.image.setPixmap(self.pixmap)
+
     def initUI(self):
         self.setGeometry(100, 100, *SCREEN_SIZE)
         self.setWindowTitle('Отображение карты')
 
-        self.coordinates = [37.530887, 55.703118]
-        self.zoom = 1
+        self.coordinates = [0, 0]
+        self.zoom = 3
         self.map_type = 'map'
 
         self.map_file = "map.png"
@@ -39,26 +42,26 @@ class MapWindow(QWidget):
         self.image.move(0, 0)
         self.image.resize(600, 450)
 
-        self.getImage()
         self.update_image()
-
-    def update_image(self):
-        self.pixmap = QPixmap(self.map_file)
-        self.image.setPixmap(self.pixmap)
 
     def closeEvent(self, event):
         """При закрытии формы подчищаем за собой"""
         os.remove(self.map_file)
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.LeftArrow:
-            self.coordinates
-        if event.key() == QtCore.Qt.RightArrow:
-            self.created.setText('enter')
-        if event.key() == QtCore.Qt.UpArrow:
-            self.created.setText('enter')
-        if event.key() == QtCore.Qt.DownArrow:
-            self.created.setText('enter')
+        print('Вход')
+        if event.key() == Qt.LeftArrow:
+            print('Левая стрелка')
+            self.coordinates[0] -= 1
+        elif event.key() == Qt.RightArrow:
+            self.coordinates[0] += 1
+        elif event.key() == Qt.UpArrow:
+            self.coordinates[1] -= 1
+        elif event.key() == Qt.DownArrow:
+            self.coordinates[1] += 1
+        else:
+            return
+        self.update_image()
 
 
 if __name__ == '__main__':
