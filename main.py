@@ -14,7 +14,6 @@ class MapWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.getImage()
 
     def getImage(self):
         server = "http://static-maps.yandex.ru/1.x/"
@@ -22,6 +21,8 @@ class MapWindow(QWidget):
                       'z': self.zoom,
                       'l': self.map_type}
         response = requests.get(server, params=parameters)
+        if not response:
+            print(response.reason)
         with open(self.map_file, "wb") as file:
             file.write(response.content)
 
@@ -30,15 +31,19 @@ class MapWindow(QWidget):
         self.setWindowTitle('Отображение карты')
 
         self.coordinates = [37.530887, 55.703118]
-        self.zoom = 1.0
+        self.zoom = 1
         self.map_type = 'map'
 
         self.map_file = "map.png"
-
-        self.pixmap = QPixmap(self.map_file)
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
+
+        self.getImage()
+        self.update_image()
+
+    def update_image(self):
+        self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
 
     def closeEvent(self, event):
