@@ -49,6 +49,7 @@ class MapWindow(QWidget):
         os.remove(self.map_file)
 
     def keyPressEvent(self, event):
+        print(self.coordinates)
         d_x = 0
         d_y = 0
         if event.key() == Qt.Key_Left:
@@ -61,11 +62,15 @@ class MapWindow(QWidget):
             d_y = -(2 ** -self.zoom * 180)
         else:
             return
-        if 0 < self.coordinates[0] + d_x < 180:
+        if self.coordinates[0] + d_x > 180:
+            self.coordinates[0] = -180 + d_x
+        elif self.coordinates[0] + d_x < -180:
+            self.coordinates[0] = (self.coordinates[0] + d_x) % 180
+        else:
             self.coordinates[0] += d_x
-        elif 0 < self.coordinates[1] + d_y < 180:
+        if abs(self.coordinates[1] + d_y) <= 90:
             self.coordinates[1] += d_y
-        elif d_x or d_y:
+        elif d_y:
             print('Перемещение невозможно')
         self.update_image()
 
