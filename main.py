@@ -1,7 +1,7 @@
 import os
 from io import BytesIO
 import sys
-from PIL import Image, ImageQt 
+from PIL import Image, ImageQt
 
 import requests
 from PyQt5.QtCore import Qt
@@ -19,7 +19,6 @@ class MapWindow(QWidget):
         self.initUI()
 
     def log_error(self, error_message):
-        # Возможно, стоит вести логи, но я думаю, что консоли будет достаточно
         print(error_message)
         self.info_label.setText(str(error_message))
 
@@ -89,6 +88,9 @@ class MapWindow(QWidget):
             d_y = 2 ** -self.zoom * 180
         elif event.key() == Qt.Key_Down:
             d_y = -(2 ** -self.zoom * 180)
+        elif event.key() == Qt.Key_Return:
+            self.search_object()
+            return
         else:
             return
         self.search_input.clearFocus()
@@ -142,7 +144,7 @@ class MapWindow(QWidget):
         map_params = {
             "ll": f'{toponym_coordinates[0]},{toponym_coordinates[1]}',
             'pt': f'{toponym_coordinates[0]},{toponym_coordinates[1]},pm2rdl',
-            "l": "map",
+            "l": self.map_type,
             "z": self.zoom,
         }
 
