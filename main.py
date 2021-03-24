@@ -53,9 +53,9 @@ class MapWindow(QWidget):
         d_x = 0
         d_y = 0
         if event.key() == Qt.Key_Left:
-            d_x = -(2 ** -self.zoom * 180)
+            d_x = -(2 ** -self.zoom * 360)
         elif event.key() == Qt.Key_Right:
-            d_x = 2 ** -self.zoom * 180
+            d_x = 2 ** -self.zoom * 360
         elif event.key() == Qt.Key_Up:
             d_y = 2 ** -self.zoom * 180
         elif event.key() == Qt.Key_Down:
