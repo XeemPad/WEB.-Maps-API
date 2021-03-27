@@ -24,9 +24,7 @@ class MapWindow(QWidget):
         self.info_label.setText(str(error_message))
 
     def update_image(self, pillow_image=None):
-        if pillow_image:
-            self.pixmap = QPixmap(QImage(ImageQt.ImageQt(pillow_image)))
-        else:
+        if not pillow_image:
             server = "http://static-maps.yandex.ru/1.x/"
             parameters = {'ll': ','.join(map(str, self.coordinates)),
                           'z': self.zoom,
@@ -35,10 +33,9 @@ class MapWindow(QWidget):
             if not response:
                 self.log_error(f'Поиск не удался: HTTP-статус: {response.status_code} '
                                f'({response.reason})')
-            with open(self.map_file, "wb") as file:
-                file.write(response.content)
-
-            self.pixmap = QPixmap(self.map_file)
+            pillow_image = Image.open(BytesIO(response.content))
+        pillow_image.save(self.map_file, format='PNG')
+        self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
 
     def initUI(self):
@@ -113,9 +110,6 @@ class MapWindow(QWidget):
         else:
             return
         self.search_input.clearFocus()
-        for button in self.map_mode_btngroup.buttons():
-            button.clearFocus()
-        self.info_label.setText(f'Текущие координаты: {self.coordinates[0]}, {self.coordinates[1]}')
         if self.coordinates[0] + d_x > 180:
             self.coordinates[0] = -180 + d_x
         elif self.coordinates[0] + d_x < -180:
@@ -126,6 +120,7 @@ class MapWindow(QWidget):
             self.coordinates[1] += d_y
         elif d_y:
             self.log_error('Перемещение невозможно')
+        self.info_label.setText(f'Текущие координаты: {self.coordinates[0]}, {self.coordinates[1]}')
         self.update_image()
 
     def search_object(self):
@@ -198,6 +193,9 @@ class MapWindow(QWidget):
                 self.map_type = 'sat,skl'
             else:
                 self.log_error('Where tf you got another mode?')
+            self.update_image()
+        for button in self.map_mode_btngroup.buttons():
+            button.clearFocus()
 
 
 if __name__ == '__main__':
