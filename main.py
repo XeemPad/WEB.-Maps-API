@@ -6,10 +6,11 @@ from PIL import Image, ImageQt
 import requests
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QFont, QImage
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QButtonGroup
 
 
-SCREEN_SIZE = [600, 550]
+
+SCREEN_SIZE = [600, 600]
 GEOCODER_APIKEY = "40d1649f-0493-4b70-98ba-98533de7710b"
 
 
@@ -58,14 +59,32 @@ class MapWindow(QWidget):
         self.search_btn = QPushButton('Поиск', self)
         self.search_btn.setGeometry(SCREEN_SIZE[0] - 65, 5, 60, 30)
         pal = self.search_btn.palette()
-        pal.setColor(QPalette.Button, QColor(100, 150, 230))
+        pal.setColor(QPalette.Button, QColor(120, 170, 230))
         self.search_btn.setPalette(pal)
         self.search_btn.setFont(self.main_font)
         self.search_btn.clicked.connect(self.search_object)
+        self.standard_mode_btn = QPushButton('Схема', self)
+        self.standard_mode_btn.setGeometry(5, 40, 70, 30)
+        self.standard_mode_btn.setFlat(True)
+        self.satellite_mode_btn = QPushButton('Спутник', self)
+        self.satellite_mode_btn.setGeometry(80, 40, 70, 30)
+        self.hybrid_mode_btn = QPushButton('Гибрид', self)
+        self.hybrid_mode_btn.setGeometry(155, 40, 70, 30)
+
+        self.map_mode_btngroup = QButtonGroup(self)
+        self.map_mode_btngroup.addButton(self.standard_mode_btn)
+        self.map_mode_btngroup.addButton(self.satellite_mode_btn)
+        self.map_mode_btngroup.addButton(self.hybrid_mode_btn)
+        pal.setColor(QPalette.Button, QColor(250, 210, 120))
+        for button in self.map_mode_btngroup.buttons():
+            button.setPalette(pal)
+            button.setFont(self.main_font)
+            button.clicked.connect(self.switch_mode)
+
 
         self.map_file = "map.png"
         self.image = QLabel(self)
-        self.image.setGeometry(0, 40, 600, 450)
+        self.image.setGeometry(0, 80, 600, 450)
 
         self.info_label = QLabel(self)
         self.info_label.setGeometry(5, SCREEN_SIZE[1] - 30, SCREEN_SIZE[0] - 100, 30)
@@ -94,6 +113,8 @@ class MapWindow(QWidget):
         else:
             return
         self.search_input.clearFocus()
+        for button in self.map_mode_btngroup.buttons():
+            button.clearFocus()
         self.info_label.setText(f'Текущие координаты: {self.coordinates[0]}, {self.coordinates[1]}')
         if self.coordinates[0] + d_x > 180:
             self.coordinates[0] = -180 + d_x
@@ -113,6 +134,7 @@ class MapWindow(QWidget):
         if not object_to_search:
             self.log_error('Поиск не удался: запрос пуст')
             return
+        self.info_label.setText('')
 
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
         geocoder_params = {"apikey": GEOCODER_APIKEY,
@@ -159,6 +181,23 @@ class MapWindow(QWidget):
 
         # Так как всё удалось, устанавливаем новые координаты:
         self.coordinates = toponym_coordinates
+
+    def switch_mode(self):
+        if self.sender().isFlat():
+            self.log_error('Данный режим уже выбран')
+        else:
+            self.info_label.setText('')
+            for button in self.map_mode_btngroup.buttons():
+                button.setFlat(False)
+            self.sender().setFlat(True)
+            if self.sender().text() == 'Схема':
+                self.map_type = 'map'
+            elif self.sender().text() == 'Спутник':
+                self.map_type = 'sat'
+            elif self.sender().text() == 'Гибрид':
+                self.map_type = 'sat,skl'
+            else:
+                self.log_error('Where tf you got another mode?')
 
 
 if __name__ == '__main__':
