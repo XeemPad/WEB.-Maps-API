@@ -62,6 +62,14 @@ class MapWindow(QWidget):
         self.search_btn.setPalette(pal)
         self.search_btn.setFont(self.main_font)
         self.search_btn.clicked.connect(self.search_object)
+
+        self.clear_btn = QPushButton('Очистить', self)
+        self.clear_btn.setGeometry(SCREEN_SIZE[0] - 100, 40, 100, 30)
+        pal.setColor(QPalette.Button, QColor(255, 100, 100))
+        self.clear_btn.setPalette(pal)
+        self.clear_btn.setFont(self.main_font)
+        self.clear_btn.clicked.connect(self.clear_object)
+
         self.standard_mode_btn = QPushButton('Схема', self)
         self.standard_mode_btn.setGeometry(5, 40, 70, 30)
         self.standard_mode_btn.setFlat(True)
@@ -79,7 +87,6 @@ class MapWindow(QWidget):
             button.setPalette(pal)
             button.setFont(self.main_font)
             button.clicked.connect(self.switch_mode)
-
 
         self.map_file = "map.png"
         self.image = QLabel(self)
@@ -111,7 +118,7 @@ class MapWindow(QWidget):
             return
         else:
             return
-        self.search_input.clearFocus()
+        self.setFocus()
         if self.coordinates[0] + d_x > 180:
             self.coordinates[0] = -180 + d_x
         elif self.coordinates[0] + d_x < -180:
@@ -161,6 +168,11 @@ class MapWindow(QWidget):
 
         self.point_parameter = f'{toponym_coordinates[0]},{toponym_coordinates[1]},pm2rdl'
         self.coordinates = toponym_coordinates
+        self.update_image()
+
+    def clear_object(self):
+        self.point_parameter = None
+        self.setFocus()
         self.update_image()
 
     def switch_mode(self):
