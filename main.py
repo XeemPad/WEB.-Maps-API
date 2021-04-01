@@ -1,13 +1,12 @@
 import os
 from io import BytesIO
 import sys
-from PIL import Image, ImageQt
+from PIL import Image
 
 import requests
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QColor, QPalette, QFont, QImage
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QButtonGroup
-
 
 
 SCREEN_SIZE = [600, 600]
@@ -28,7 +27,9 @@ class MapWindow(QWidget):
             server = "http://static-maps.yandex.ru/1.x/"
             parameters = {'ll': ','.join(map(str, self.coordinates)),
                           'z': self.zoom,
-                          'l': self.map_type}
+                          'l': self.map_type,
+                          'pt': self.point_parameter,
+                          }
             response = requests.get(server, params=parameters)
             if not response:
                 self.log_error(f'Поиск не удался: HTTP-статус: {response.status_code} '
@@ -48,13 +49,14 @@ class MapWindow(QWidget):
         self.coordinates = [0.0, 0.0]
         self.zoom = 5
         self.map_type = 'map'
+        self.point_parameter = None
 
         self.search_input = QLineEdit(self)
-        self.search_input.setGeometry(5, 5, SCREEN_SIZE[0] - 70, 30)
+        self.search_input.setGeometry(5, 5, SCREEN_SIZE[0] - 105, 30)
         self.search_input.setFont(self.main_font)
 
         self.search_btn = QPushButton('Поиск', self)
-        self.search_btn.setGeometry(SCREEN_SIZE[0] - 65, 5, 60, 30)
+        self.search_btn.setGeometry(SCREEN_SIZE[0] - 100, 5, 100, 30)
         pal = self.search_btn.palette()
         pal.setColor(QPalette.Button, QColor(120, 170, 230))
         self.search_btn.setPalette(pal)
@@ -157,25 +159,9 @@ class MapWindow(QWidget):
         # Координаты центра топонима:
         toponym_coordinates = list(map(float, toponym["Point"]["pos"].split(" ")))
 
-        # Параметры для запроса к StaticMapsAPI:
-        map_params = {
-            "ll": f'{toponym_coordinates[0]},{toponym_coordinates[1]}',
-            'pt': f'{toponym_coordinates[0]},{toponym_coordinates[1]},pm2rdl',
-            "l": self.map_type,
-            "z": self.zoom,
-        }
-
-        map_api_server = "http://static-maps.yandex.ru/1.x/"
-        response = requests.get(map_api_server, params=map_params)
-        if response:
-            self.update_image(Image.open(BytesIO(response.content)))
-        else:
-            self.log_error(f'Получить изображение не удалось: '
-                           f'HTTP-статус: {response.status_code} ({response.reason})')
-            return
-
-        # Так как всё удалось, устанавливаем новые координаты:
+        self.point_parameter = f'{toponym_coordinates[0]},{toponym_coordinates[1]},pm2rdl'
         self.coordinates = toponym_coordinates
+        self.update_image()
 
     def switch_mode(self):
         if self.sender().isFlat():
